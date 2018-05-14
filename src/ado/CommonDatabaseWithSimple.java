@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CommonDatabase {
+public class CommonDatabaseWithSimple {
 	static {
 		try {
 			Class.forName("com.mysql.jdbc.Driver");

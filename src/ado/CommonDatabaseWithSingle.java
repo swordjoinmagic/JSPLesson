@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CommonDatabase {
+public class CommonDatabaseWithSingle {
 	static {
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
@@ -23,6 +23,14 @@ public class CommonDatabase {
 	
 	private String user = "root";
 	private String password = "09043330";
+	
+	public static final CommonDatabaseWithSingle ado = new CommonDatabaseWithSingle();
+	
+	public static CommonDatabaseWithSingle getAdo() {
+		return ado;
+	}
+
+	private CommonDatabaseWithSingle() {}
 	
 	public Connection getConnection() {
 		String url = "jdbc:mysql://localhost:3306/JSP";
@@ -53,11 +61,10 @@ public class CommonDatabase {
 		
 		// 建立数据库连接
 		Connection conn = getConnection();
-		PreparedStatement pre = null;
 		
 		try {
 			// 建立sql预处理Statememnt
-			pre = conn.prepareStatement(sql);
+			PreparedStatement pre = conn.prepareStatement(sql);
 			
 			// 为预处理语句设置参数
 			setParms(pre, objects);
@@ -69,19 +76,6 @@ public class CommonDatabase {
 			
 		}catch(Exception e) {
 			System.out.println(e);
-		}finally {
-			try {
-				pre.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 		return null;
 	}

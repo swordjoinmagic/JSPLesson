@@ -16,7 +16,6 @@
 <body>
 	<!-- 错误演示JSP连接数据库样例 -->
 	<%
-		List<String>list = new ArrayList<String>();
 		try{
 			Class.forName("com.mysql.jdbc.Driver");
 		}catch(Exception e){
@@ -26,8 +25,11 @@
 		String password = "09043330";
 		String url = "jdbc:mysql://localhost:3306/JSP";
 		
+		List<String>list = new ArrayList<String>();
+		
 		try{
-			Connection conn = DriverManager.getConnection(url,user,password);
+			//Connection conn = DriverManager.getConnection(url,user,password);
+			Connection conn = null;
 			Statement state = conn.createStatement();
 			
 			ResultSet rs = state.executeQuery("select * from books");
