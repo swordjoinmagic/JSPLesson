@@ -6,8 +6,11 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+
+import javabean.Book;
 
 public class CommonDatabaseWithSimple {
 	static {
@@ -19,7 +22,6 @@ public class CommonDatabaseWithSimple {
 			System.out.println(e);
 		}
 	}
-	
 	
 	private String user = "root";
 	private String password = "09043330";
@@ -34,44 +36,44 @@ public class CommonDatabaseWithSimple {
 		}
 		return connection;
 	}
-	
-	public void setParms(PreparedStatement pre,Object...objects) throws NumberFormatException, SQLException {
-		for(int i=0;i<objects.length;i++) {
-			if(objects[i] instanceof Integer) {
-				pre.setInt(i+1, Integer.parseInt(objects[i].toString()));
-			}else if(objects[i] instanceof String) {
-				pre.setString(i+1, objects[i].toString());
-			}else if(objects[i] instanceof Float) {
-				pre.setFloat(i+1, Float.parseFloat(objects[i].toString()));
-			}else if(objects[i] instanceof Double) {
-				pre.setDouble(i+1, Double.parseDouble(objects[i].toString()));
-			}
-		}
-	}
-	
-	public ResultSet getQuery(String sql,Object...objects) {
-		
-		// 建立数据库连接
+	public List<Book> getBookList(){
+		// 第一步，建立连接
 		Connection conn = getConnection();
-		PreparedStatement pre = null;
+		Statement state = null;
+		ResultSet rs = null;
 		
+		// 第二步，编写sql语句
+		String sql = "select * from bookes";
+		
+		// 将数据从数据库中取出，并存放到到一个List中
+		List<Book>list = new ArrayList<Book>();
+		// 第三步，将数据从数据库中取出，并放入一个数据结构中
 		try {
-			// 建立sql预处理Statememnt
-			pre = conn.prepareStatement(sql);
+			state = conn.createStatement();
+			// 执行sql语句
+			rs = state.executeQuery(sql);			
 			
-			// 为预处理语句设置参数
-			setParms(pre, objects);
+			while(rs.next()) {
+				Book book = new Book();
+				String name = rs.getString("name");
+				String author = rs.getString("author");
+				book.setAuthor(author);
+				book.setName(name);
+				list.add(book);
+			}
 			
-			// 进行查询操作
-			ResultSet rs = pre.executeQuery();
-			
-			return rs;
-			
-		}catch(Exception e) {
+		}catch(SQLException e) {
 			System.out.println(e);
 		}finally {
+			// 在这里密切注意要对数据库连接，statement，resultset进行关闭操作
 			try {
-				pre.close();
+				rs.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				state.close();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -83,58 +85,6 @@ public class CommonDatabaseWithSimple {
 				e.printStackTrace();
 			}
 		}
-		return null;
-	}
-	
-	// 通用查询
-	/**
-	 * @param sql SQL语句
-	 * @param javabean	生成的JavaBean类型
-	 * @param objects	为SQL语句设置的参数
-	 * @return
-	 */
-	public <T> List<T> commonQuery(String sql,Class<T>JavaBeanClass,Object...objects) {
-		List<T> list = new ArrayList<>();
-		
-		// 建立连接
-		Connection conn = getConnection();
-		
-		try {
-			// 建立预处理环境
-			PreparedStatement pre = conn.prepareStatement(sql);
-			// 为预处理语句设置参数
-			setParms(pre, objects);
-			
-			// 进行查询
-			ResultSet rs = pre.executeQuery();
-			
-			// 通过反射将数据库中的数据注入javabean中
-			while(rs.next()) {
-				// 生成javabean
-				T data = JavaBeanClass.newInstance();
-				
-				// 利用set方法将数据库中的数据注入javabean中
-				for(Method method:JavaBeanClass.getMethods()) { 
-					if(method.toString().indexOf("set")!=-1) {
-						// 要被注入的属性名
-						String attribute = method.toString().substring(3);
-						
-						// 注入属性
-						method.invoke(data, rs.getString(attribute));
-						
-					}
-				}
-				
-				// 将生成的JavaBean放入List中
-				list.add(data);
-				
-			}
-			
-		}catch (Exception e) {
-			System.out.println(e);
-		}
-		
 		return list;
 	}
-
 }

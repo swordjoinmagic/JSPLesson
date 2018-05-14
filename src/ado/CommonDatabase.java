@@ -9,6 +9,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javabean.Book;
+
 public class CommonDatabase {
 	static {
 		try {
@@ -98,15 +100,16 @@ public class CommonDatabase {
 		
 		// 建立连接
 		Connection conn = getConnection();
-		
+		PreparedStatement pre = null;
+		ResultSet rs = null;
 		try {
 			// 建立预处理环境
-			PreparedStatement pre = conn.prepareStatement(sql);
+			pre = conn.prepareStatement(sql);
 			// 为预处理语句设置参数
 			setParms(pre, objects);
 			
 			// 进行查询
-			ResultSet rs = pre.executeQuery();
+			rs = pre.executeQuery();
 			
 			// 通过反射将数据库中的数据注入javabean中
 			while(rs.next()) {
@@ -115,26 +118,44 @@ public class CommonDatabase {
 				
 				// 利用set方法将数据库中的数据注入javabean中
 				for(Method method:JavaBeanClass.getMethods()) { 
-					if(method.toString().indexOf("set")!=-1) {
+					if(method.getName().indexOf("set")!=-1) {
 						// 要被注入的属性名
-						String attribute = method.toString().substring(3);
-						
+						String attribute = method.getName().substring(3);
+																		
 						// 注入属性
-						method.invoke(data, rs.getString(attribute));
-						
+						method.invoke(data, rs.getObject(attribute));
 					}
 				}
-				
 				// 将生成的JavaBean放入List中
 				list.add(data);
-				
 			}
 			
 		}catch (Exception e) {
 			System.out.println(e);
+		}finally {
+			try {
+				rs.close();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			try {
+				pre.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 		return list;
 	}
-
+	public static void main(String[] args) {
+		CommonDatabase ado = new CommonDatabase();
+	}
 }

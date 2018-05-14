@@ -7,6 +7,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import ado.CommonDatabase;
+import javabean.Book;
+import javabean.Score;
+
 public class test1 {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 //		Class.forName("com.mysql.jdbc.Driver");
@@ -19,6 +23,8 @@ public class test1 {
 //		while(rs.next()) {
 //			System.out.println(rs.getString(1));
 //		}
-		System.out.println("setAttribute".substring(3));
+//		System.out.println("setAttribute".substring(3));
+		CommonDatabase ado = new CommonDatabase();
+		System.out.println(ado.commonQuery("select * from score", Score.class).get(0).getScore());
 	}
 }
