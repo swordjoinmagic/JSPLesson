@@ -9,7 +9,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CommonDatabaseWithSingle {
+import javax.naming.*;
+import javax.sql.DataSource;
+
+import javabean.Book;
+
+public class CommonDatabaseWithConnectionPool {
 	static {
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
@@ -23,25 +28,22 @@ public class CommonDatabaseWithSingle {
 	
 	private String user = "root";
 	private String password = "09043330";
-	private Connection connection = null;
 	
-	public static final CommonDatabaseWithSingle ado = new CommonDatabaseWithSingle();
-	
-	public static CommonDatabaseWithSingle getAdo() {
-		return ado;
-	}
-
-	private CommonDatabaseWithSingle() {
-		connection = getConnection();
-	}
-	
-	private Connection getConnection() {
-		String url = "jdbc:mysql://localhost:3306/JSP";
+	public Connection getConnection() {
 		Connection connection = null;
 		try {
-			connection = DriverManager.getConnection(url,user,password);
-		}catch (Exception e) {
-			System.out.println(e);
+			// 初始化查找命名空间
+			Context ctx = new InitialContext();
+			// 参数java:/comp/env是固定路径
+			Context envContext = (Context)ctx.lookup("java:/comp/env");
+			// 参数jdbc/myDataBase是数据源和JNDI绑定的名字
+			DataSource ds = (DataSource)envContext.lookup("jdbc/myDataBase");
+			// 获得连接
+			connection = ds.getConnection();
+		}catch(NamingException e) {
+			e.printStackTrace();
+		}catch (SQLException e) {
+			e.printStackTrace();
 		}
 		return connection;
 	}
@@ -54,10 +56,13 @@ public class CommonDatabaseWithSingle {
 	
 	public ResultSet getQuery(String sql,Object...objects) {
 		
+		// 建立数据库连接
+		Connection conn = getConnection();
+		PreparedStatement pre = null;
 		
 		try {
 			// 建立sql预处理Statememnt
-			PreparedStatement pre = connection.prepareStatement(sql);
+			pre = conn.prepareStatement(sql);
 			
 			// 为预处理语句设置参数
 			setParms(pre, objects);
@@ -69,6 +74,19 @@ public class CommonDatabaseWithSingle {
 			
 		}catch(Exception e) {
 			System.out.println(e);
+		}finally {
+			try {
+				pre.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return null;
 	}
@@ -84,12 +102,12 @@ public class CommonDatabaseWithSingle {
 		List<T> list = new ArrayList<>();
 		
 		// 建立连接
-//		Connection conn = getConnection();
+		Connection conn = getConnection();
 		PreparedStatement pre = null;
 		ResultSet rs = null;
 		try {
 			// 建立预处理环境
-			pre = connection.prepareStatement(sql);
+			pre = conn.prepareStatement(sql);
 			// 为预处理语句设置参数
 			setParms(pre, objects);
 			
@@ -130,15 +148,17 @@ public class CommonDatabaseWithSingle {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-//			try {
-//				conn.close();
-//			} catch (SQLException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 		return list;
 	}
-
+	public static void main(String[] args) {
+		CommonDatabaseWithConnectionPool ado = new CommonDatabaseWithConnectionPool();
+	}
 }

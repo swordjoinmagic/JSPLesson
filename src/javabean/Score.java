@@ -1,13 +1,19 @@
 package javabean;
 
 public class Score {
-	private int score;
+	private float score;
 
-	public int getScore() {
+	public float getScore() {
 		return score;
 	}
 
-	public void setScore(int score) {
+	public void setScore(float score) {
 		this.score = score;
 	}
+
+	@Override
+	public String toString() {
+		return "Score [score=" + score + "]";
+	}
+
 }

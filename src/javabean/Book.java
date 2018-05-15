@@ -9,6 +9,10 @@ public class Book {
 	public void setName(String name) {
 		this.name = name;
 	}
+	@Override
+	public String toString() {
+		return "Book [name=" + name + ", author=" + author + "]";
+	}
 	public String getAuthor() {
 		return author;
 	}

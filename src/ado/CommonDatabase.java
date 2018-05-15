@@ -37,17 +37,9 @@ public class CommonDatabase {
 		return connection;
 	}
 	
-	public void setParms(PreparedStatement pre,Object...objects) throws NumberFormatException, SQLException {
+	public void setParms(PreparedStatement pre,Object...objects) throws SQLException {
 		for(int i=0;i<objects.length;i++) {
-			if(objects[i] instanceof Integer) {
-				pre.setInt(i+1, Integer.parseInt(objects[i].toString()));
-			}else if(objects[i] instanceof String) {
-				pre.setString(i+1, objects[i].toString());
-			}else if(objects[i] instanceof Float) {
-				pre.setFloat(i+1, Float.parseFloat(objects[i].toString()));
-			}else if(objects[i] instanceof Double) {
-				pre.setDouble(i+1, Double.parseDouble(objects[i].toString()));
-			}
+			pre.setObject(i+1, objects[i]);
 		}
 	}
 	

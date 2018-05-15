@@ -25,6 +25,6 @@ public class test1 {
 //		}
 //		System.out.println("setAttribute".substring(3));
 		CommonDatabase ado = new CommonDatabase();
-		System.out.println(ado.commonQuery("select * from score", Score.class).get(0).getScore());
+		System.out.println(ado.commonQuery("select * from exam", Score.class));
 	}
 }
